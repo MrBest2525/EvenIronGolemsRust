@@ -1,0 +1,8 @@
+name: EvenIronGolemsRust
+version: '0.0.0'
+main: com.github.mrbest2525.evenIronGolemsRust.EvenIronGolemsRust
+api-version: '1.21.11'
+prefix: EvenIronGolemsRust
+authors: [ Mr.Best ]
+license: MIT
+description: IronGolemも錆びる
