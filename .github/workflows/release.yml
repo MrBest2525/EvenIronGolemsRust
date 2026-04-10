@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   release:
-    types: [published] # GitHubで「Publish release」ボタンを押した時に起動
+    types: [published]
 
 jobs:
   build:
@@ -21,16 +21,37 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Update version in paper-plugin.yml
+        run: |
+          # タグ名を取得 (例: v1.0.2)
+          RAW_TAG=${{ github.event.release.tag_name }}
+          # 頭の 'v' を除いた純粋なバージョン番号を作成 (例: 1.0.2)
+          VERSION=${RAW_TAG#v}
+          
+          # paper-plugin.yml の version 行を置換
+          sed -i "s/^version: .*/version: '${VERSION}'/" src/main/resources/paper-plugin.yml
+          echo "Updated paper-plugin.yml version to: ${VERSION}"
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: Rename JAR with Tag
+        run: |
+          TAG_NAME=${{ github.event.release.tag_name }}
+          cd build/libs/
+          # 生成されたJARの末尾にタグ名を連結 (例: EvenIronGolemsRust-1.0.2-v1.0.2.jar)
+          for file in *.jar; do
+            if [[ "$file" != *"-all.jar" ]]; then
+              mv "$file" "${file%.jar}-$TAG_NAME.jar"
+            fi
+          done
+
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          # ビルドされたJARファイルを自動でリリースに添付
           files: build/libs/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
