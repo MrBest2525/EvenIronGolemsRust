@@ -21,16 +21,20 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Update version in paper-plugin.yml
+      - name: Update project versions
         run: |
           # タグ名を取得 (例: v1.0.2)
           RAW_TAG=${{ github.event.release.tag_name }}
           # 頭の 'v' を除いた純粋なバージョン番号を作成 (例: 1.0.2)
           VERSION=${RAW_TAG#v}
           
-          # paper-plugin.yml の version 行を置換
+          # 1. paper-plugin.yml の version 行を置換
           sed -i "s/^version: .*/version: '${VERSION}'/" src/main/resources/paper-plugin.yml
-          echo "Updated paper-plugin.yml version to: ${VERSION}"
+          
+          # 2. build.gradle の version = '...' 行を置換
+          sed -i "s/^version = .*/version = '${VERSION}'/" build.gradle
+          
+          echo "Updated paper-plugin.yml and build.gradle to version: ${VERSION}"
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -42,7 +46,8 @@ jobs:
         run: |
           TAG_NAME=${{ github.event.release.tag_name }}
           cd build/libs/
-          # 生成されたJARの末尾にタグ名を連結 (例: EvenIronGolemsRust-1.0.2-v1.0.2.jar)
+          # 生成されたJARの末尾にタグ名を連結
+          # (例: EvenIronGolemsRust-1.0.2-v1.0.2.jar)
           for file in *.jar; do
             if [[ "$file" != *"-all.jar" ]]; then
               mv "$file" "${file%.jar}-$TAG_NAME.jar"
