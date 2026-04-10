@@ -42,18 +42,6 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      - name: Rename JAR with Tag
-        run: |
-          TAG_NAME=${{ github.event.release.tag_name }}
-          cd build/libs/
-          # 生成されたJARの末尾にタグ名を連結
-          # (例: EvenIronGolemsRust-1.0.2-v1.0.2.jar)
-          for file in *.jar; do
-            if [[ "$file" != *"-all.jar" ]]; then
-              mv "$file" "${file%.jar}-$TAG_NAME.jar"
-            fi
-          done
-
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
